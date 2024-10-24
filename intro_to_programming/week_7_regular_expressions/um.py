@@ -33,7 +33,6 @@ each of whose names should begin with test_ so that you can execute your tests w
 pytest test_um.py
 """
 import re
-import sys
 
 def main():
     print(count(input("Text: ")))
