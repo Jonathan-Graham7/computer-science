@@ -27,40 +27,41 @@ def initializePins(num_to_randomize):
         pins[num] *= -1
     return pins
 
-def inputPins():
-    while True:
-        input_pins = input("Please list the remaining pins in the format 'integer, integer, ...': ").split(',')
-        pins = []
-        for pin in input_pins:
-            pin.strip()
-            try:
-                pin = int(pin)
-            except ValueError:
-                continue
-            else:
-                if pin > 6 or pin < 1:
-                    continue
-                pins.append(pin)
-        if len(pins) == len(input_pins):
-            return pins
+def inputPinsValidation(input_pins):
+    verify_pin = []
+    for pin in input_pins:
+        try:
+            pin = float(pin)
+        except ValueError:
+            return False
+        else:
+            if pin > 6 or pin < -6 or pin == 0:
+                return False
+        if not round(abs(pin)) + 0.00001 > pin:
+            return False
+        if round(pin) in verify_pin:
+            return False
+        if -1 * round(pin) in verify_pin:
+            return False
+        verify_pin.append(round(pin))
+    return True
         
 def verifyInput(equation, die):
-    die_list = die.tolist()
     verify_die = []
     acceptable_characters = ['(', ')', '+', '-', '*', '/', '^', 's', 'q', 'r', 't', '!', ' ']
     for entry in equation:
         if entry in acceptable_characters:
             continue
         if entry.isdigit():
-            if int(entry) in die_list:
+            if int(entry) in die:
                 verify_die.append(int(entry))
                 continue
             else:
                 return f"Used a number that was not rolled on the die, {entry}."
         return f"Used a character not approved for equations, {entry}."
-    die_list.sort()
+    die.sort()
     verify_die.sort()
-    if die_list != verify_die:
+    if die != verify_die:
         return "Didn't use all of the rolled die."
     return "Valid"
 
@@ -187,7 +188,7 @@ def simpleSolveInput(equation):
                 break
     if len(equation) != 1:
         return len(equation), f'Equation was not fully solved, still contained {equation}'
-    if round(equation[0]) < equation[0] + 0.00001 and -1 * round(equation[0]) > -1 * equation[0] + 0.00001: #checks for accuracy up to 5 decimal places
+    if not round(abs(equation[0])) + 0.00001 > equation[0]: #checks for accuracy up to 5 decimal places
         return float(equation[0]), f'Equation did not equal an integer'
     return round(equation[0]), 'Valid'
 
@@ -271,8 +272,8 @@ def scoreKeeper(current_pins_up):
     return score
 
 def playBall(pin_set, same_frame):
-    die = np.random.randint(1, 7, 3)
-    #die = np.array([3, 2, 1])
+    die = np.random.randint(1, 7, 3).tolist()
+    #die = [3, 2, 1]
     while True:
         for pin in pin_set:
             print(pin, end=' ')
@@ -306,9 +307,20 @@ def main():
     pins = initializePins(args_given['difficulty'])
     second_ball_check = input("Is this the second ball using the remaining pins? ")
     second_ball = False
+    # check if this is the second ball of the frame, and replace the initialized pins with pins to be input
     if re.search(r"^[Yy]", second_ball_check):
         second_ball = True
-        pins = inputPins()
+        while True:
+            input_pins = input("Please list the remaining pins in the format 'integer, integer, ...': ").split(',')
+            input_pins = [pin.strip() for pin in input_pins]
+            input_pins.sort()
+            pin_validation = inputPinsValidation(input_pins)
+            if pin_validation:
+                pins = input_pins
+                break
+            else:
+                print("Please use the format: 'integer, integer, ...'")
+                continue
     report_score = playBall(pins, second_ball)
     print(colorPrinter(report_score, 'green'))
 
