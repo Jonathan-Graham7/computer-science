@@ -18,6 +18,12 @@ def argParser():
         metavar='[0-10]',
         default=0
     )
+    parser.add_argument(
+        '-continue',
+        help='Use this flag if this is the next ball for the same set of pins.',
+        action=argparse.BooleanOptionalAction,
+        default=False
+    )
     return vars(parser.parse_args())
 
 def initializePins(num_to_randomize):
@@ -37,13 +43,13 @@ def inputPinsValidation(input_pins):
         else:
             if pin > 6 or pin < -6 or pin == 0:
                 return False
-        if not round(abs(pin)) + 0.00001 > pin:
+        if not pin == int(pin):
             return False
-        if round(pin) in verify_pin:
+        if int(pin) in verify_pin:
             return False
-        if -1 * round(pin) in verify_pin:
+        if -1 * int(pin) in verify_pin:
             return False
-        verify_pin.append(round(pin))
+        verify_pin.append(int(pin))
     return True
         
 def verifyInput(equation, die):
@@ -68,7 +74,7 @@ def verifyInput(equation, die):
 def verifyEquationFormat(equation_character):
     try:
         float(equation_character)
-    except ValueError:
+    except (ValueError, TypeError):
         return False
     return True
 
@@ -79,11 +85,14 @@ def simpleSolveInput(equation):
                 factorial_place = equation.index('!')
                 if not verifyEquationFormat(equation[factorial_place - 1]):
                     return equation[factorial_place - 1], 'Typo in equation'
+                if factorial_place == 0:
+                    return equation[0], 'Typo in equation'
                 factorial_number = float(equation[factorial_place - 1])
-                if round(factorial_number) < factorial_number + 0.00001 and -1 * round(factorial_number) > -1 * factorial_number + 0.00001:
-                    equation[factorial_place] = math.factorial(round(equation[factorial_place - 1]))
-                else:
+                if factorial_number > 15:
+                    return factorial_number, 'Tried to use factorial on too large of a number'
+                if int(abs(factorial_number) + 0.00001) + 0.00001 < factorial_number:
                     return factorial_number, 'Tried to compute factorial on non-integer.'
+                equation[factorial_place] = math.factorial(round(factorial_number))
                 del equation[factorial_place - 1]
             else:
                 break
@@ -97,6 +106,10 @@ def simpleSolveInput(equation):
                     exponent_place = equation.index('^')
                 except ValueError:
                     exponent_place = sys.maxsize
+                if root_place == 0 or root_place == 1 or exponent_place == 0:
+                    return equation[0], 'Typo in equation'
+                if root_place == len(equation) - 1 or exponent_place == len(equation) - 1:
+                    return equation[-1], 'Typo in equation'
                 if exponent_place != sys.maxsize:
                     if not verifyEquationFormat(equation[exponent_place + 1]):
                         return equation[exponent_place + 1], 'Typo in equation'
@@ -136,6 +149,10 @@ def simpleSolveInput(equation):
                     division_place = equation.index('/')
                 except ValueError:
                     division_place = sys.maxsize
+                if multiplication_place == 0 or division_place == 0:
+                    return equation[0], 'Typo in equation'
+                if multiplication_place == len(equation) - 1 or division_place == len(equation) - 1:
+                    return equation[-1], 'Typo in equation'
                 if multiplication_place != sys.maxsize:
                     if not verifyEquationFormat(equation[multiplication_place + 1]):
                         return equation[multiplication_place + 1], 'Typo in equation'
@@ -166,6 +183,10 @@ def simpleSolveInput(equation):
                     subtraction_place = equation.index('-')
                 except ValueError:
                     subtraction_place = sys.maxsize
+                if addition_place == 0 or subtraction_place == 0:
+                    return equation[0], 'Typo in equation'
+                if addition_place == len(equation) - 1 or subtraction_place == len(equation) - 1:
+                    return equation[-1], 'Typo in equation'
                 if addition_place != sys.maxsize:
                     if not verifyEquationFormat(equation[addition_place + 1]):
                         return equation[addition_place + 1], 'Typo in equation'
@@ -186,9 +207,14 @@ def simpleSolveInput(equation):
                     del equation[subtraction_place - 1]
             else:
                 break
+    else:
+        try:
+            equation[0] = float(equation[0])
+        except ValueError:
+            return len(equation), f'Unexpected solo character, {equation}'
     if len(equation) != 1:
-        return len(equation), f'Equation was not fully solved, still contained {equation}'
-    if not round(abs(equation[0])) + 0.00001 > equation[0]: #checks for accuracy up to 5 decimal places
+        return len(equation), f'Equation was not fully solved, still contained {equation}. Most likely due to a typo in the equation.'
+    if int(abs(equation[0]) + 0.00001) + 0.00001 < equation[0]: #checks for accuracy up to 5 decimal places
         return float(equation[0]), f'Equation did not equal an integer'
     return round(equation[0]), 'Valid'
 
@@ -199,9 +225,9 @@ def complexSolveInput(equation):
     for term in equation_list:
         if term == 's':
             root_counter += 1
-    if root_counter > 7:
+    if root_counter >= 7:
         return root_counter, f"Tried to cheat by using square root function too many times"
-    if '(' not in equation_list or ')' not in equation_list:
+    if '(' not in equation_list and ')' not in equation_list:
         return simpleSolveInput(equation_list)
     while True:
         for entry in equation_list:
@@ -271,44 +297,30 @@ def scoreKeeper(current_pins_up):
     score = len(current_pins_up) - still_up
     return score
 
-def playBall(pin_set, same_frame):
-    die = np.random.randint(1, 7, 3).tolist()
-    #die = [3, 2, 1]
-    while True:
-        for pin in pin_set:
-            print(pin, end=' ')
-        print()
-        input_string = f"Enter an equation using {die[0]}, {die[1]}, and {die[2]} or type 'end' to complete the first half of the frame: "
-        equation_input = input(input_string)
-        if equation_input == 'end':
-            break
-        is_valid = verifyInput(equation_input, die)
-        if is_valid != 'Valid':
-            print(colorPrinter(is_valid), 'red')
-            continue
-        solution = complexSolveInput(equation_input)
-        if solution[1] != 'Valid':
-            print(colorPrinter(solution[1] + ', ' + str(solution[0]), 'red'))
-            continue
-        if solution[0] in pin_set:
-            print(colorPrinter(equation_input + ' = ' + str(solution[0]), 'green'))
-            pin_set[pin_set.index(solution[0])] = colorPrinter('\u2713', 'green')
-        else:
-            print(colorPrinter(str(solution[0]) + ' is not a pin to hit', 'red'))
-    ball_score = scoreKeeper(pin_set)
-    if ball_score == len(pin_set):
-        if same_frame:
-            return "SPARE!"
-        return "STRIKE!"
-    return str(ball_score)
+def playBall(pin_set, rolled_die, input_equation):
+    if input_equation == 'end':
+        return 'end'
+    is_valid = verifyInput(input_equation, rolled_die)
+    if is_valid != 'Valid':
+        return colorPrinter(is_valid, 'red')
+    solution = complexSolveInput(input_equation)
+    if solution[1] != 'Valid':
+        return colorPrinter(solution[1] + ', ' + str(solution[0]), 'red')
+    if solution[0] not in pin_set:
+        return colorPrinter(str(solution[0]) + ' is not a pin to hit', 'red')
+    else:
+        # feedback to the user to show that their equation is valid
+        print(colorPrinter(input_equation + ' = ' + str(solution[0]), 'green'))
+        pin_set[pin_set.index(solution[0])] = colorPrinter('\u2713', 'green')
+    return pin_set
 
 def main():
     args_given = argParser()
     pins = initializePins(args_given['difficulty'])
-    second_ball_check = input("Is this the second ball using the remaining pins? ")
+    second_ball_check = args_given['continue']
     second_ball = False
     # check if this is the second ball of the frame, and replace the initialized pins with pins to be input
-    if re.search(r"^[Yy]", second_ball_check):
+    if second_ball_check:
         second_ball = True
         while True:
             input_pins = input("Please list the remaining pins in the format 'integer, integer, ...': ").split(',')
@@ -316,13 +328,33 @@ def main():
             input_pins.sort()
             pin_validation = inputPinsValidation(input_pins)
             if pin_validation:
-                pins = input_pins
+                pins = [int(pin) for pin in input_pins]
                 break
             else:
                 print("Please use the format: 'integer, integer, ...'")
                 continue
-    report_score = playBall(pins, second_ball)
-    print(colorPrinter(report_score, 'green'))
+    die = np.random.randint(1, 7, 3).tolist()
+    while True:
+        for pin in pins:
+            print(pin, end=' ')
+        print()
+        input_string = f"Enter an equation using {die[0]}, {die[1]}, and {die[2]} or type 'end' to complete the first half of the frame: "
+        equation_input = input(input_string)
+        pins_left = playBall(pins, die, equation_input)
+        if not isinstance(pins_left, list):
+            if pins_left == 'end':
+                break
+            else:
+                print(pins_left)
+        else:
+            pins = pins_left
+    ball_score = scoreKeeper(pins)
+    if ball_score == len(pins):
+        if second_ball:
+            report_score = "SPARE!"
+        report_score = "STRIKE!"
+    report_score = str(ball_score)
+    print(colorPrinter('Score: ' + report_score, 'green'))
 
 if __name__ == "__main__":
     main()
