@@ -10,17 +10,22 @@
         the game, or between ball rolls in the same frame, that will have to be tracked manually. If the player would like to increase the difficulty
         (up to 10) use the command line tag '-difficulty int(#)' where int(#) is the desired difficulty. If this is the next ball roll for the same
         set of pins, use the command line tag '-continue'.
-    -   Starting with no tags will generate a pin set [1-10] and three random numbers [1-6] with possible repetition and ask for an equation using the
-        three random numbers to equal one of the numbers in the pin set. Valid input characters are '(',')','+','-','*','/','^','s','q','r','t','!',
-        and any number [1-6]. It will verify that all of the numbers generated were used and only those numbers were used and it will verify that
-        equation characters are in valid placement.
     -   Starting with a '-difficult int(#)' tag will generate a pin set with int(#) negative numbers.
     -   Starting with a '-continue' tag will ask for what pins were remaining and say to input them in the following format
         "Please list the remaining pins in the format 'integer, integer, ...': "
-    The scope of this project is beyond just this assignment. This step is to simulate the game being played for a single frame with an argument 
-    option to simulate the last frame, since the last frame in bowling is slightly different than the rest of the frames. The next piece of the 
-    process will be to have the program able to simulate the full ten frames of a bowling game. Following this is to have the game ported to a web 
-    application using this python code as the backend. The last thing will be to have a coutdown clock running on the web app so that the program 
-    will be fully self regulating and not rely on any external factors in order to fully play properly.
+    -   Starting with no tags will generate a pin set [1-10] and three random numbers [1-6] with possible repetition and ask for an equation using the
+        three random numbers to equal one of the numbers in the pin set. Valid input characters are '(',')','+','-','*','/','^','s','q','r','t','!',
+        and any number [1-6].
+    -   Any input that contains an invalid character will return the first invalid character used.
+    -   The generated pin set and the randomly chosen die will be printed to the console and ask for an equation to be input. The equation that is
+        input will be verified to use only valid characters, and as the equation is being solved, it will be verified to be a valid equation.
+    -   Any equation that is invalid will be returned as there being a typo in the equation and an indicator of where and what the typo is.
+    -   When the equation is solved, it will be printed to the console with an equal sign and the solution, all in green text. The pin set will be
+        updated with a green check mark replacing the pin that was solved for.
+    -   Any equation that is solved for a number that is not included in the pin set will be returned as not  solving for a valid pin. If an equation
+        solves for a pin that has already been solved for, it will be treated the same as if the number was not in the pin set.
+    -   To end the game and have the score counted, type 'end' into the equation input or use the keys 'ctrl-d'. The sore will be returned as a number
+        in green text. However, if the score was 10 and the '-continue' tag was not used, the score will be returned as "STRIKE" and if the
+        '-continue' tag was used, it will be returned as "SPARE".
 
-    TODO description for functions
+    TODO make video

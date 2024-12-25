@@ -298,8 +298,6 @@ def scoreKeeper(current_pins_up):
     return score
 
 def playBall(pin_set, rolled_die, input_equation):
-    if input_equation == 'end':
-        return 'end'
     is_valid = verifyInput(input_equation, rolled_die)
     if is_valid != 'Valid':
         return colorPrinter(is_valid, 'red')
@@ -339,13 +337,16 @@ def main():
             print(pin, end=' ')
         print()
         input_string = f"Enter an equation using {die[0]}, {die[1]}, and {die[2]} or type 'end' to complete the first half of the frame: "
-        equation_input = input(input_string)
+        try:
+            equation_input = input(input_string)
+        except EOFError:
+            print('')
+            equation_input = 'end'
+        if equation_input == 'end':
+            break
         pins_left = playBall(pins, die, equation_input)
         if not isinstance(pins_left, list):
-            if pins_left == 'end':
-                break
-            else:
-                print(pins_left)
+            print(pins_left)
         else:
             pins = pins_left
     ball_score = scoreKeeper(pins)

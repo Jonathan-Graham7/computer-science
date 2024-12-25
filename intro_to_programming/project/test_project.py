@@ -152,4 +152,4 @@ def test_playBall():
     assert(project.playBall([1,2,3,4,5,6,7,8,9,10], [1,2,3], '1-2-3')) == project.colorPrinter('-4 is not a pin to hit', 'red')
     assert(project.playBall([1,2,3,4,5,6,7,8,9,10], [1,2,3], 'sqrt(3+2+1)')) == project.colorPrinter('Equation did not equal an integer' + ', ' + str((3+2+1)**(1/2)), 'red')
     assert(project.playBall([1,2,3,4,5,6,7,8,9,10], [1,2,3], '1+2')) == project.colorPrinter("Didn't use all of the rolled die.", 'red')
-    assert(project.playBall([1,2,3,4,5,6,7,8,9,10], [1,2,3], 'end')) == 'end'
+    assert(project.playBall([1,2,3,4,5,6,7,8,9,10], [1,2,3], 'end')) == project.colorPrinter('Used a character not approved for equations, e.', 'red')
