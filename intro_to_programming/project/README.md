@@ -1,5 +1,5 @@
     # Math Bowling Game
-    #### Video Demo:  <URL HERE>
+    #### Video Demo:  https://youtu.be/VO6RQ2SN7oQ
     #### Description:
     -   A game in which the player(s) rolls three six-sided die, then uses the three die rolls in equations that equal 1 through 10 including
         possibilities for any of those numbers to be negative. The equation must use all three die rolls and can use any of the following operations:
@@ -27,5 +27,5 @@
     -   To end the game and have the score counted, type 'end' into the equation input or use the keys 'ctrl-d'. The sore will be returned as a number
         in green text. However, if the score was 10 and the '-continue' tag was not used, the score will be returned as "STRIKE" and if the
         '-continue' tag was used, it will be returned as "SPARE".
-
-    TODO make video
+    -   A timer was originally implemented, but it was clunky on the command line and taking away from the project. It will be reimplemented when the
+        project is moved to be a web app.

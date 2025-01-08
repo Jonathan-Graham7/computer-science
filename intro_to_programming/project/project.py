@@ -2,7 +2,6 @@ import sys
 import argparse
 import numpy as np
 import math
-import re
 
 def argParser():
     parser = argparse.ArgumentParser(
@@ -41,7 +40,7 @@ def inputPinsValidation(input_pins):
         except ValueError:
             return False
         else:
-            if pin > 6 or pin < -6 or pin == 0:
+            if pin > 10 or pin < -10 or pin == 0:
                 return False
         if not pin == int(pin):
             return False
@@ -323,10 +322,10 @@ def main():
         while True:
             input_pins = input("Please list the remaining pins in the format 'integer, integer, ...': ").split(',')
             input_pins = [pin.strip() for pin in input_pins]
-            input_pins.sort()
             pin_validation = inputPinsValidation(input_pins)
             if pin_validation:
                 pins = [int(pin) for pin in input_pins]
+                pins.sort()
                 break
             else:
                 print("Please use the format: 'integer, integer, ...'")
@@ -353,8 +352,10 @@ def main():
     if ball_score == len(pins):
         if second_ball:
             report_score = "SPARE!"
-        report_score = "STRIKE!"
-    report_score = str(ball_score)
+        else:
+            report_score = "STRIKE!"
+    else:
+        report_score = str(ball_score)
     print(colorPrinter('Score: ' + report_score, 'green'))
 
 if __name__ == "__main__":
