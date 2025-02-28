@@ -5,3 +5,4 @@
 .envrc
 intro_to_programming/assignments
 *pycache*
+*.code-workspace
